@@ -1,0 +1,2 @@
+payment_event_id,purchase_id,player_id,event_type,event_at,amount_cents,currency,source_version
+PAY001,PUR001,P01,purchase,2026-11-01T09:15:00.000Z,1000,USD,1

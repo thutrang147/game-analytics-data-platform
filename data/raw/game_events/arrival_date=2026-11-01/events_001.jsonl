@@ -1,0 +1,2 @@
+{"event_id": "E001", "player_id": "P01", "session_id": "S001", "event_type": "session_start", "event_at": "2026-11-01T09:00:00.000Z", "source_version": 1, "level_id": null}
+{"event_id": "E002", "player_id": "P02", "session_id": "S002", "event_type": "session_start", "event_at": "2026-11-01T10:00:00.000Z", "source_version": 1, "level_id": null}
