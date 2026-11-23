@@ -1,0 +1,16 @@
+{
+  "batch_date": "2026-11-02",
+  "manifest_id": "manifest_001",
+  "files": [
+    {
+      "source": "game_events",
+      "key": "raw/game_events/arrival_date=2026-11-02/events_001.jsonl",
+      "checksum_sha256": "4ec3f2041257e21e25f912660a0fdb00252ab6ef5efa4758484ff6a4b2ac1e1d"
+    },
+    {
+      "source": "payments",
+      "key": "raw/payments/arrival_date=2026-11-02/payments_001.csv",
+      "checksum_sha256": "1d36415e0d61b19ccd9a26f1010e6d19be4976db8afa2d0a84ad4ceccafefab5"
+    }
+  ]
+}

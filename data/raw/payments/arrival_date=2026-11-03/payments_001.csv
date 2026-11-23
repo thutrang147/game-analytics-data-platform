@@ -1,0 +1,2 @@
+payment_event_id,purchase_id,player_id,event_type,event_at,amount_cents,currency,source_version
+PAY002,PUR001,P01,refund,2026-11-02T16:00:00.000Z,300,USD,1

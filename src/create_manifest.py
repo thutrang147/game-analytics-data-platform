@@ -20,22 +20,31 @@ def sha256_file(path: Path) -> str:
     return hasher.hexdigest()
 
 
-def main():
-    sources = [
-        (
-            "game_events",
-            "raw/game_events/arrival_date=2026-11-01/events_001.jsonl"
-        ),
-        (
-            "payments",
-            "raw/payments/arrival_date=2026-11-01/payments_001.csv"
-        ),
+def create_manifest(batch_date=BATCH_DATE, manifest_id=MANIFEST_ID, data_dir=DATA_DIR, sources=None):
+    from datetime import date
+    import re
+    date.fromisoformat(batch_date)
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", manifest_id):
+        raise ValueError("Invalid manifest_id")
+    # Freeze an explicit list. Existing manifests are never expanded by discovery.
+    sources = sources if sources is not None else [
+        ("game_events", f"raw/game_events/arrival_date={batch_date}/events_001.jsonl"),
+        ("payments", f"raw/payments/arrival_date={batch_date}/payments_001.csv"),
     ]
-
     files = []
+    seen = set()
+    if not sources:
+        raise ValueError("Manifest requires a nonempty file list")
 
     for source, key in sources:
-        file_path = DATA_DIR / key
+        if source not in {"game_events", "payments"}:
+            raise ValueError("Unexpected source")
+        file_path = (Path(data_dir) / key).resolve()
+        if Path(key).is_absolute() or not file_path.is_relative_to(Path(data_dir).resolve()):
+            raise ValueError(f"Invalid path: {key}")
+        if key in seen:
+            raise ValueError("Duplicate manifest key")
+        seen.add(key)
 
         if not file_path.is_file():
             raise FileNotFoundError(file_path)
@@ -47,16 +56,16 @@ def main():
         })
 
     manifest = {
-        "batch_date": BATCH_DATE,   # Ngày batch được tổ chức để xử lý
-        "manifest_id": MANIFEST_ID, # Định danh danh sách file đầu vào của batch
+        "batch_date": batch_date,   # Ngày batch được tổ chức để xử lý
+        "manifest_id": manifest_id, # Định danh danh sách file đầu vào của batch
         "files": files,
     }
 
     output = (
-        DATA_DIR
+        Path(data_dir)
         / "manifests"
-        / f"batch_date={BATCH_DATE}"
-        / f"{MANIFEST_ID}.json"
+        / f"batch_date={batch_date}"
+        / f"{manifest_id}.json"
     )
 
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -72,13 +81,23 @@ def main():
 
         print("Manifest already exists and matches.")
     else:
-        output.write_text(
-            json.dumps(manifest, indent=2),
-            encoding="utf-8"
-        )
+        with output.open("x", encoding="utf-8") as handle:
+            handle.write(json.dumps(manifest, indent=2))
         print("Created manifest:", output)
 
-    print(json.dumps(manifest, indent=2))
+    return output
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Freeze checksums for an explicit batch file list")
+    parser.add_argument("--batch-date", default=BATCH_DATE)
+    parser.add_argument("--manifest-id", default=MANIFEST_ID)
+    parser.add_argument("--data-dir", type=Path, default=DATA_DIR)
+    parser.add_argument("--file", action="append", help="SOURCE=KEY; repeat for each input file")
+    args = parser.parse_args()
+    sources = [item.split("=", 1) for item in args.file] if args.file else None
+    print(create_manifest(args.batch_date, args.manifest_id, args.data_dir, sources))
 
 
 if __name__ == "__main__":
